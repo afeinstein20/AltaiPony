@@ -32,8 +32,8 @@ def wrap_characterization_of_flares(injrec, flares, ampl_bins=None, dur_bins=Non
     """
     # define observed flare duration
     flares["dur"] = flares.tstop - flares.tstart
-    
-    ampl_bins, dur_bins = setup_bins(injrec, flares, ampl_bins=ampl_bins, 
+
+    ampl_bins, dur_bins = setup_bins(injrec, flares, ampl_bins=ampl_bins,
                                      dur_bins=dur_bins,
                                      flares_per_bin=flares_per_bin)
 
@@ -184,8 +184,8 @@ def tile_up_injection_recovery(df, typ, ampl="amplitude", dur="duration_d",
         df["rec"] = df.ed_rec.fillna(0).astype(bool).astype(int)
     if "dur" not in df.columns:
         df["dur"] = df.tstop - df.tstart
-    
- 
+
+
     d1 = df.assign(Amplitude=pd.cut(df[ampl], ampl_bins),
                    Duration=pd.cut(df[dur],  dur_bins))
 
@@ -254,7 +254,7 @@ def percentile(x, q):
 
 def _heatmap(flcd, typ, ampl_bins, dur_bins, flares_per_bin, **kwargs):
     """Create a heatmap for either recovery probability or ED ratio.
-    
+
     Parameters:
     -----------
     flcd : FlareLightCurve
@@ -278,38 +278,38 @@ def _heatmap(flcd, typ, ampl_bins, dur_bins, flares_per_bin, **kwargs):
     # define observed flare duration
     flcd.flares["dur"] = flcd.flares.tstop - flcd.flares.tstart
     flcd.fake_flares["dur"] = flcd.fake_flares.tstop - flcd.fake_flares.tstart
-    
-    ampl_bins, dur_bins = setup_bins(flcd.fake_flares, flcd.flares, 
+
+    ampl_bins, dur_bins = setup_bins(flcd.fake_flares, flcd.flares,
                                      ampl_bins=ampl_bins, dur_bins=dur_bins,
                                      flares_per_bin=flares_per_bin)
-   
+
     # Tile up the inj-rec table using the bins.
-    dff, val = tile_up_injection_recovery(flcd.fake_flares, 
+    dff, val = tile_up_injection_recovery(flcd.fake_flares,
                                           typ,
                                           ampl_bins=ampl_bins,
                                           dur_bins=dur_bins,)
-    
+
     # Map internal keywords to human-readable ones:
-    typ_map = {"recovery_probability" : 
+    typ_map = {"recovery_probability" :
                ["injected", "FWHM", "recovery probability"],
-               "ed_ratio" : 
+               "ed_ratio" :
                ["recovered", "duration", "ED ratio"]}
 
     # Create a heatmap
     fig = plot_heatmap(dff, val, ID=flcd.targetid, label=typ_map[typ][2],
-                       ylabel=f"{typ_map[typ][0]} amplitude", 
+                       ylabel=f"{typ_map[typ][0]} amplitude",
                        xlabel=f"{typ_map[typ][0]} {typ_map[typ][1]} [d]", **kwargs);
-    
+
     return fig
-    
-    
+
+
 def plot_heatmap(df, val, label=None,
                  ID=None, valcbr=(0.,1.),
                  ovalcbr=(0,50), xlabel="duration [d]",
                  ylabel="amplitude", cmap="viridis",
                  font_scale=1.5, interpolate=False):
-    """Plot a heatmap from the "fake_flares" table. 
-    
+    """Plot a heatmap from the "fake_flares" table.
+
     Parameters:
     ------------
     df : DataFrame
@@ -325,15 +325,15 @@ def plot_heatmap(df, val, label=None,
     xlabel : str or "duration [d]"
         xlabel for plot
     ylabel : str or "amplitude"
-        ylabel for plot   
+        ylabel for plot
     cmap : colormap
         default "viridis"
     font_scale : float
         set the size of tick labels, and bar label
-    
+
     Return:
     -------
-    matplotlib.figure.Figure        
+    matplotlib.figure.Figure
     """
 
     # configure Seaborn
@@ -343,24 +343,24 @@ def plot_heatmap(df, val, label=None,
     df = df.reset_index()
     df.Amplitude = df.Amplitude.apply(lambda x: x.mid)
     df.Duration = df.Duration.apply(lambda x: x.mid)
-    
+
     # Init figure
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (9,7))
-    
+
     # Some layout stuff
     if label is None:
         label = val
-    
-    # Create heatmap data format 
-    heatmap1_data = pd.pivot_table(df, values=val, 
-                         index=['Amplitude'], 
+
+    # Create heatmap data format
+    heatmap1_data = pd.pivot_table(df, values=val,
+                         index=['Amplitude'],
                          columns=['Duration'])
 
     if interpolate==True:
         heatmap1_data.iloc[:,:] = (heatmap1_data.bfill(axis=0).values +
 	                                        heatmap1_data.ffill(axis=0).values +
 	                                        heatmap1_data.bfill(axis=1).values +
-	                                        heatmap1_data.ffill(axis=1).values) / 4 
+	                                        heatmap1_data.ffill(axis=1).values) / 4
         heatmap1_data = heatmap1_data.bfill(axis=0).ffill(axis=0).bfill(axis=1).ffill(axis=1)
 
     try:
@@ -373,16 +373,16 @@ def plot_heatmap(df, val, label=None,
 	                      vmin=valcbr[0], vmax=valcbr[1], annot=False, ax=ax,
 	                      yticklabels=["{:.2e}".format(x) for x in heatmap1_data.index.values.categories.values.mid.values],
 	                      xticklabels=["{:.2e}".format(x) for x in heatmap1_data.columns.values.categories.values.mid.values])
-        
+
     fig = heatmap.get_figure()
-    
+
     # Do some layout stuff
-    
+
     fig.tight_layout()
     for label in ax.xaxis.get_ticklabels()[::2]:
         label.set_visible(False)
     for label in ax.yaxis.get_ticklabels()[::2]:
-        label.set_visible(False)    
+        label.set_visible(False)
     ax.set_xlabel(xlabel, fontsize=16)
     ax.set_ylabel(ylabel, fontsize=16)
     ax.set_title(ID, fontsize=16)
@@ -392,13 +392,13 @@ def plot_heatmap(df, val, label=None,
 
 def setup_bins(injrec, flares, ampl_bins=None, dur_bins=None, flares_per_bin=None):
     """Get amplitude and duration bins.
-    
+
     Parameters:
     ------------
     """
     # Did the user give appropriate bins?
     bins = np.array([bool(ampl_bins is not None), bool(dur_bins is not None)])
-    
+
     # If only one or no bin is given explicitly, make dure flares_per_bin is set
     if ((~bins.all()) & (flares_per_bin is None)):
         raise ValueError("Give either ampl_bins and dur_bins, or either of "
@@ -408,52 +408,52 @@ def setup_bins(injrec, flares, ampl_bins=None, dur_bins=None, flares_per_bin=Non
     # If only one out of [ampl_bins, dur_bins] is specified
     # specify the other by fixing the `flares_per_bin`
     if ((bins.any()) & (~bins.all())):
-        
+
         # Which one is not defined?
         if ampl_bins is None:
             b = copy.copy(dur_bins)
         elif dur_bins is None:
             b = copy.copy(ampl_bins)
-            
+
         # If defined bins are given as array, find length
         if (isinstance(b, float) | isinstance(b, int)):
             l = b
         else:
-            l = len(b)    
+            l = len(b)
 
         # Define the other bins accordingly
         if ampl_bins is None:
             ampl_bins = int(np.rint(injrec.shape[0] / l / flares_per_bin))
         elif dur_bins is None:
             dur_bins = int(np.rint(injrec.shape[0] / l / flares_per_bin))
-    
+
     # If no bins are specified, choose bins of equal size
     # with approximately `flares_per_bin` in each bin:
     elif ~bins.any():
         bins = int(np.rint(np.sqrt(injrec.shape[0] / flares_per_bin)))
         ampl_bins, dur_bins = bins, bins
-        
+
     # If no flares are given, substitute with fake flares
     if flares.shape[0] == 0:
         flares = injrec
-        
+
     # Set bins according to data
     if isinstance(ampl_bins, int):
         ampl_bins = np.linspace(min(injrec.ampl_rec.min(),
-                                    flares.ampl_rec.min(), 
+                                    flares.ampl_rec.min(),
                                     injrec.amplitude.min()),
                                 max(injrec.ampl_rec.max(),
                                     flares.ampl_rec.max(),
-                                    injrec.amplitude.max()), 
+                                    injrec.amplitude.max()),
                                 ampl_bins)
-                                
+
     if isinstance(dur_bins, int):
         dur_bins = np.linspace(min(injrec.dur.min(),
-                                   flares.dur.min(), 
+                                   flares.dur.min(),
                                    injrec.duration_d.min()),
                                max(injrec.dur.max(),
                                    flares.dur.max(),
-                                   injrec.duration_d.max()), 
+                                   injrec.duration_d.max()),
                                dur_bins)
 
     return ampl_bins, dur_bins
