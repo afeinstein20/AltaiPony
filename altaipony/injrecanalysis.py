@@ -202,7 +202,7 @@ def tile_up_injection_recovery(df, typ, ampl="amplitude", dur="duration_d",
 
     else:
         d1["rel"] = d1[types[typ][0]] / d1[types[typ][1]]
-        grouped = d1.groupby(["Amplitude","Duration"])
+        grouped = d1.groupby(["amplitude","duration_d"])
         d2 = grouped.rel.median()
         d3 = getattr(grouped.rel, otherfunc)()
         val = types[typ][2]
