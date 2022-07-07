@@ -341,8 +341,8 @@ def plot_heatmap(df, val, label=None,
 
     # Find the midpoint of the interval to use as ticks
     df = df.reset_index()
-    df.Amplitude = df.Amplitude.apply(lambda x: x.mid)
-    df.Duration = df.Duration.apply(lambda x: x.mid)
+    df.amplitude = df.amplitude.apply(lambda x: np.nanmedian(x))
+    df.duration_d = df.duration_d.apply(lambda x: np.nanmedian(x))
 
     # Init figure
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize = (9,7))
@@ -353,8 +353,8 @@ def plot_heatmap(df, val, label=None,
 
     # Create heatmap data format
     heatmap1_data = pd.pivot_table(df, values=val,
-                         index=['Amplitude'],
-                         columns=['Duration'])
+                         index=['amplitude'],
+                         columns=['duration_d'])
 
     if interpolate==True:
         heatmap1_data.iloc[:,:] = (heatmap1_data.bfill(axis=0).values +
